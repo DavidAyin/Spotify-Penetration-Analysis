@@ -1,0 +1,27 @@
+--total number of active users per country
+with active_users as (select country, 
+                        cast(count(*) as float) as number_of_active_users
+from penetration_analysis
+where sessions >= 5 AND 
+        listening_hours >= 10 AND
+        '2024-01-31' - last_active_date <= 30
+group by country),
+-- total users per country
+total_users_per_country as (select country, 
+                            cast(count(*) as float) as total_users
+from penetration_analysis
+group by country),
+
+users as(select *
+from active_users as a
+left join total_users_per_country as t
+using(country))
+
+--calculating the active user penetration rate
+select country,
+        number_of_active_users,
+        total_users,
+        number_of_active_users/total_users as active_user_penetration_rate
+from users
+
+
